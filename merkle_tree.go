@@ -31,15 +31,22 @@ func NewMerkleTree(data [][]byte) *MerkleTree {
 
 	for i := 0; i < len(data)/2; i++ {
 		var newLevel []MerkleNode
-
-		for j := 0; j < len(nodes); j += 2 {
-			node := NewMerkleNode(&nodes[j], &nodes[j+1], nil)
-			newLevel = append(newLevel, *node)
+		for j:=0;j<len(nodes);j+=2{
+			if j < (len(nodes)-1) {
+				node := NewMerkleNode(&nodes[j],&nodes[j+1],0)
+				//fmt.Printf("%d ",node.Data)
+				newLevel = append(newLevel,*node)
+			} else {
+				node := NewMerkleNode(&nodes[j],nil,0)
+				//fmt.Printf("%d ",node.Data)
+				newLevel = append(newLevel,*node)
+			}
 		}
-
 		nodes = newLevel
+		if len(nodes) == 1 {
+			break;
+			}
 	}
-
 	mTree := MerkleTree{&nodes[0]}
 
 	return &mTree
@@ -52,7 +59,10 @@ func NewMerkleNode(left, right *MerkleNode, data []byte) *MerkleNode {
 	if left == nil && right == nil {
 		hash := sha256.Sum256(data)
 		mNode.Data = hash[:]
-	} else {
+	} else if right ==nil {
+		mNode.Data = left.Data
+	}
+	else {
 		prevHashes := append(left.Data, right.Data...)
 		hash := sha256.Sum256(prevHashes)
 		mNode.Data = hash[:]
